@@ -1,6 +1,6 @@
 /**
  * Admin panel — user activity & last login.
- * Only reachable by sbheema@swardesi.com (enforced by auth.js nav visibility
+ * Only reachable by prasadforshiva@gmail.com (enforced by auth.js nav visibility
  * AND by the /admin/users backend endpoint).
  */
 (function initAdminPanel() {
@@ -34,12 +34,12 @@
     try {
       const diffMs = Date.now() - new Date(iso).getTime();
       const sec = Math.floor(diffMs / 1000);
-      if (sec < 5)   return 'just now';
-      if (sec < 60)  return `${sec}s ago`;
+      if (sec < 5) return 'just now';
+      if (sec < 60) return `${sec}s ago`;
       const min = Math.floor(sec / 60);
-      if (min < 60)  return `${min}m ago`;
+      if (min < 60) return `${min}m ago`;
       const hr = Math.floor(min / 60);
-      if (hr < 24)   return `${hr}h ago`;
+      if (hr < 24) return `${hr}h ago`;
       return _fmtDateTime(iso);
     } catch { return iso; }
   }
@@ -57,7 +57,7 @@
     }
 
     const base = _apiBase();
-    const url  = base ? `${base}/admin/users` : '/admin/users';
+    const url = base ? `${base}/admin/users` : '/admin/users';
 
     container.innerHTML = '<div class="admin-loading">Loading\u2026</div>';
 
@@ -111,12 +111,12 @@
           <tbody>`;
 
     for (const u of users) {
-      const isOnline  = u.isOnline;
-      const dotClass  = isOnline ? 'online' : 'offline';
-      const dotTitle  = isOnline ? 'Online now' : 'Offline';
-      const initial   = (u.email || '?')[0].toUpperCase();
-      const name      = u.displayName ? `<span class="admin-display-name">${_esc(u.displayName)}</span>` : '';
-      const disabled  = u.disabled ? ' <span class="admin-disabled-badge">disabled</span>' : '';
+      const isOnline = u.isOnline;
+      const dotClass = isOnline ? 'online' : 'offline';
+      const dotTitle = isOnline ? 'Online now' : 'Offline';
+      const initial = (u.email || '?')[0].toUpperCase();
+      const name = u.displayName ? `<span class="admin-display-name">${_esc(u.displayName)}</span>` : '';
+      const disabled = u.disabled ? ' <span class="admin-disabled-badge">disabled</span>' : '';
 
       html += `
             <tr class="${isOnline ? 'row-online' : ''}">

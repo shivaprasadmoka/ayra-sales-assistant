@@ -126,7 +126,6 @@ except ImportError:
     _FIREBASE_AVAILABLE = False
 
 _firebase_init_done = False
-# _ADMIN_EMAIL = "sbheema@swardesi.com"
 _ADMIN_EMAIL = "prasadforshiva@gmail.com"
 _ONLINE_WINDOW_SEC = 120  # seconds before a user is considered offline
 _firestore_client = None

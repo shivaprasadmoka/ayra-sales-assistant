@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,172 +15,198 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 </head>
+
 <body>
 
-<!-- AUTH OVERLAY -->
-<div id="authOverlay" class="auth-overlay">
-  <div class="auth-card">
-    <div class="auth-logo">&#10022;</div>
-    <div class="auth-title">Ayra</div>
-    <p class="auth-subtitle">Your intelligent sales data assistant</p>
-    <button id="signInBtn" class="auth-sign-in-btn">
-      <span class="google-g">G</span>Sign in with Google
-    </button>
+  <!-- AUTH OVERLAY -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-logo">&#10022;</div>
+      <div class="auth-title">Ayra</div>
+      <p class="auth-subtitle">Your intelligent sales data assistant</p>
+      <button id="signInBtn" class="auth-sign-in-btn">
+        <span class="google-g">G</span>Sign in with Google
+      </button>
+    </div>
   </div>
-</div>
 
-<!-- SIDEBAR OVERLAY (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+  <!-- SIDEBAR OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
 
-<!-- APP SHELL: sidebar + main -->
-<div class="app-shell" id="appShell" style="display:none">
+  <!-- APP SHELL: sidebar + main -->
+  <div class="app-shell" id="appShell" style="display:none">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-brand">
-        <span class="sidebar-logo">&#10022;</span>
-        <span class="sidebar-name">Ayra</span>
-      </div>
-      <button id="sidebarCollapseBtn" class="icon-btn sidebar-collapse-btn" title="Collapse sidebar" aria-label="Collapse sidebar">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </button>
-    </div>
-
-    <nav class="sidebar-nav" aria-label="App sections">
-      <button class="sidebar-nav-item active" data-tab="rag">
-        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-        <span class="nav-label">Chat</span>
-      </button>
-      <button class="sidebar-nav-item" data-tab="support">
-        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-        </svg>
-        <span class="nav-label">Support</span>
-      </button>
-      <!-- Admin tab: only visible to sbheema@swardesi.com, shown by auth.js -->
-      <button class="sidebar-nav-item" data-tab="admin" style="display:none">
-        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        </svg>
-        <span class="nav-label">Admin</span>
-      </button>
-      <!-- Settings tab -->
-      <button class="sidebar-nav-item" data-tab="settings">
-        <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-        <span class="nav-label">Settings</span>
-      </button>
-    </nav>
-
-    <div class="sidebar-spacer"></div>
-
-    <!-- Compact role status shown in sidebar -->
-    <div class="sidebar-role-status" id="roleStatus">
-      <span class="role-dot-sm" id="roleStatusDot"></span>
-      <span class="role-status-label" id="roleStatusLabel">Internal</span>
-    </div>
-
-    <!-- Footer: user + controls -->
-    <div class="sidebar-footer">
-      <div id="userPill" class="sidebar-user" style="display:none">
-        <span id="userAvatar" class="user-avatar">U</span>
-        <div class="sidebar-user-text">
-          <span id="userEmail" class="user-email"></span>
-          <span id="adminBadge" class="admin-badge" style="display:none">Admin</span>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <span class="sidebar-logo">&#10022;</span>
+          <span class="sidebar-name">Ayra</span>
         </div>
-        <button id="signOutBtn" class="sign-out-btn" title="Sign out" aria-label="Sign out">&#x21aa;</button>
-      </div>
-      <div class="sidebar-footer-actions">
-        <button id="themeToggle" class="icon-btn theme-btn" title="Toggle theme" aria-label="Toggle theme">&#x1F319;</button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
-
-
-
-    <!-- RAG CHAT VIEW -->
-    <div id="view-rag" class="tab-view active">
-      <div class="view-header">
-        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        <button id="sidebarCollapseBtn" class="icon-btn sidebar-collapse-btn" title="Collapse sidebar"
+          aria-label="Collapse sidebar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-        <span class="view-title">Chat</span>
       </div>
-      <main id="chat" class="chat-area" aria-live="polite"></main>
-      <div class="composer">
-        <form id="chatForm" class="composer-form" autocomplete="off">
-          <textarea id="prompt" class="composer-input" rows="1"
-            placeholder="Ask a question&hellip; (Enter to send &middot; Shift+Enter for new line)"></textarea>
-          <button id="sendBtn" type="submit" class="send-btn" aria-label="Send">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+
+      <nav class="sidebar-nav" aria-label="App sections">
+        <button class="sidebar-nav-item active" data-tab="rag">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span class="nav-label">Chat</span>
+        </button>
+        <button class="sidebar-nav-item" data-tab="support">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+          <span class="nav-label">Support</span>
+        </button>
+        <!-- Admin tab: only visible to prasadforshiva@gmail.com, shown by auth.js -->
+        <button class="sidebar-nav-item" data-tab="admin" style="display:none">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span class="nav-label">Admin</span>
+        </button>
+        <!-- Settings tab -->
+        <button class="sidebar-nav-item" data-tab="settings">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span class="nav-label">Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+
+      <!-- Compact role status shown in sidebar -->
+      <div class="sidebar-role-status" id="roleStatus">
+        <span class="role-dot-sm" id="roleStatusDot"></span>
+        <span class="role-status-label" id="roleStatusLabel">Internal</span>
+      </div>
+
+      <!-- Footer: user + controls -->
+      <div class="sidebar-footer">
+        <div id="userPill" class="sidebar-user" style="display:none">
+          <span id="userAvatar" class="user-avatar">U</span>
+          <div class="sidebar-user-text">
+            <span id="userEmail" class="user-email"></span>
+            <span id="adminBadge" class="admin-badge" style="display:none">Admin</span>
+          </div>
+          <button id="signOutBtn" class="sign-out-btn" title="Sign out" aria-label="Sign out">&#x21aa;</button>
+        </div>
+        <div class="sidebar-footer-actions">
+          <button id="themeToggle" class="icon-btn theme-btn" title="Toggle theme"
+            aria-label="Toggle theme">&#x1F319;</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+
+
+      <!-- RAG CHAT VIEW -->
+      <div id="view-rag" class="tab-view active">
+        <div class="view-header">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-        </form>
+          <span class="view-title">Chat</span>
+        </div>
+        <main id="chat" class="chat-area" aria-live="polite"></main>
+        <div class="composer">
+          <form id="chatForm" class="composer-form" autocomplete="off">
+            <textarea id="prompt" class="composer-input" rows="1"
+              placeholder="Ask a question&hellip; (Enter to send &middot; Shift+Enter for new line)"></textarea>
+            <button id="sendBtn" type="submit" class="send-btn" aria-label="Send">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
 
-    <!-- SUPPORT VIEW -->
-    <div id="view-support" class="tab-view">
-      <div class="view-header">
-        <button class="mobile-menu-btn" aria-label="Open navigation" onclick="document.getElementById('mobileMenuBtn').click()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-        <span class="view-title">Support</span>
-      </div>
-      <div class="support-intro">
-        <p>Describe an issue you're experiencing and the Support Agent will investigate the code, open a fix PR, and deploy it if the root cause is confirmed.</p>
-      </div>
-      <main id="support-chat" class="chat-area" aria-live="polite"></main>
-      <div class="composer">
-        <form id="supportForm" class="composer-form" autocomplete="off">
-          <textarea id="support-prompt" class="composer-input" rows="1"
-            placeholder="Describe your issue&hellip; (Enter to send &middot; Shift+Enter for new line)"></textarea>
-          <button id="supportSendBtn" type="submit" class="send-btn" aria-label="Send">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      <!-- SUPPORT VIEW -->
+      <div id="view-support" class="tab-view">
+        <div class="view-header">
+          <button class="mobile-menu-btn" aria-label="Open navigation"
+            onclick="document.getElementById('mobileMenuBtn').click()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-        </form>
+          <span class="view-title">Support</span>
+        </div>
+        <div class="support-intro">
+          <p>Describe an issue you're experiencing and the Support Agent will investigate the code, open a fix PR, and
+            deploy it if the root cause is confirmed.</p>
+        </div>
+        <main id="support-chat" class="chat-area" aria-live="polite"></main>
+        <div class="composer">
+          <form id="supportForm" class="composer-form" autocomplete="off">
+            <textarea id="support-prompt" class="composer-input" rows="1"
+              placeholder="Describe your issue&hellip; (Enter to send &middot; Shift+Enter for new line)"></textarea>
+            <button id="supportSendBtn" type="submit" class="send-btn" aria-label="Send">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
 
-    <!-- ADMIN VIEW — visible to sbheema@swardesi.com only -->
-    <div id="view-admin" class="tab-view">
-      <div class="view-header">
-        <button class="mobile-menu-btn" aria-label="Open navigation" onclick="document.getElementById('mobileMenuBtn').click()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-        <span class="view-title">Admin &mdash; Users</span>
-        <button id="adminRefreshBtn" class="icon-btn" title="Refresh" aria-label="Refresh user list">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-          </svg>
-        </button>
+      <!-- ADMIN VIEW — visible to prasadforshiva@gmail.com only -->
+      <div id="view-admin" class="tab-view">
+        <div class="view-header">
+          <button class="mobile-menu-btn" aria-label="Open navigation"
+            onclick="document.getElementById('mobileMenuBtn').click()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <span class="view-title">Admin &mdash; Users</span>
+          <button id="adminRefreshBtn" class="icon-btn" title="Refresh" aria-label="Refresh user list">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
+          </button>
+        </div>
+        <div id="adminUsersTable" class="admin-panel-body">
+          <div class="admin-loading">Loading…</div>
+        </div>
       </div>
-      <div id="adminUsersTable" class="admin-panel-body">
-        <div class="admin-loading">Loading…</div>
-      </div>
-    </div>
 
       <!-- ─── Settings View ──────────────────────────────── -->
       <div id="view-settings" class="tab-view">
@@ -202,10 +229,8 @@
               </div>
               <div class="sett-row" id="settingsSalespersonRow" style="display:none">
                 <span class="sett-label" id="settingsSpLabel">Salesperson ID</span>
-                <input id="salespersonId" class="sett-input" type="text"
-                       placeholder="e.g. F1010"
-                       list="salespersonsDatalist"
-                       autocomplete="off" spellcheck="false" />
+                <input id="salespersonId" class="sett-input" type="text" placeholder="e.g. F1010"
+                  list="salespersonsDatalist" autocomplete="off" spellcheck="false" />
                 <datalist id="salespersonsDatalist"></datalist>
               </div>
               <div class="sett-row">
@@ -264,21 +289,22 @@
 
     </div><!-- /.main-content -->
 
-</div><!-- /.app-shell -->
+  </div><!-- /.app-shell -->
 
-<template id="msgTemplate">
-  <article class="msg">
-    <div class="msg-avatar"></div>
-    <div class="msg-content">
-      <div class="msg-meta"></div>
-      <div class="msg-body"></div>
-    </div>
-  </article>
-</template>
+  <template id="msgTemplate">
+    <article class="msg">
+      <div class="msg-avatar"></div>
+      <div class="msg-content">
+        <div class="msg-meta"></div>
+        <div class="msg-body"></div>
+      </div>
+    </article>
+  </template>
 
-<script src="./auth.js"></script>
-<script src="./app.js"></script>
-<script src="./support.js"></script>
-<script src="./admin.js"></script>
+  <script src="./auth.js"></script>
+  <script src="./app.js"></script>
+  <script src="./support.js"></script>
+  <script src="./admin.js"></script>
 </body>
+
 </html>

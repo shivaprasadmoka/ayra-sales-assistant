@@ -24,8 +24,8 @@ from google.genai import types
 
 _log = logging.getLogger(__name__)
 
-_REPO_OWNER = "saibheema"
-_REPO_NAME = "Agentic_RAG_ADK"
+_REPO_OWNER = "shivaprasadmoka"
+_REPO_NAME = "ayra-sales-assistant"
 _DEFAULT_BRANCH = "main"
 _GH_PAT_SECRET = os.environ.get(
     "GITHUB_PAT_SECRET",
@@ -706,7 +706,7 @@ root_agent = LlmAgent(
     generate_content_config=types.GenerateContentConfig(max_output_tokens=4096),
     description="Support agent: triages user-reported issues, investigates code, and auto-fixes confirmed bugs via GitHub PR.",
     instruction="""
-You are the Support Agent for the Agentic RAG application (GitHub repo: saibheema/Agentic_RAG_ADK).
+You are the Support Agent for the Agentic RAG application (GitHub repo: shivaprasadmoka/ayra-sales-assistant).
 
 Users report problems they experience. Your job: investigate, classify, and resolve.
 

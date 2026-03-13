@@ -22,7 +22,6 @@
     appId: "1:540348927450:web:bc882ab9d8302b8206c4e3"
   };
 
-  // const ADMIN_EMAIL = "sbheema@swardesi.com";
   const ADMIN_EMAIL = "prasadforshiva@gmail.com";
 
   if (!firebase.apps.length) {

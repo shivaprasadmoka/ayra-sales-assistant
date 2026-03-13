@@ -47,8 +47,8 @@ TARGET_PORT="1433"
 VPN_MODE="l2tp"   # ← change to "ikev2" if using IKEv2 PSK only
 
 # Repo location inside the VM (will be cloned from GitHub)
-REPO_URL="https://github.com/saibheema/Agentic_RAG_ADK.git"
-REPO_DIR="/opt/Agentic_RAG_ADK"
+REPO_URL="https://github.com/shivaprasadmoka/ayra-sales-assistant"
+REPO_DIR="/opt/ayra-sales-assistant"
 DOCKER_DIR="${REPO_DIR}/scripts/docker_vpn"
 
 echo "==> [1/6] Creating VPN relay VM: ${VM_NAME} in ${ZONE}..."
