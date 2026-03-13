@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment / secrets  (.env itself stays gitignored; connections.json is safe to commit)
+.env
+
+# VPN scripts contain credentials — local use only
+scripts/vpn_setup.sh
+scripts/vpn_install.sh
+scripts/vpn_connect.sh
+scripts/vpn_disconnect.sh
+scripts/vpn_strongswan_setup.sh
+scripts/vpn_strongswan_connect.sh
+scripts/vpn_strongswan_disconnect.sh
+
+# Docker VPN tunnel — run script contains credentials
+scripts/docker_vpn/run_vpn_tunnel.sh
+
+# VPN relay VM setup — contains VPN credentials when filled in
+scripts/vpn_relay_vm/setup_vpn_relay_vm.sh
+
+# Temporary local test scripts
+test_run.py
+
+# Node (google-mcp)
+node_modules/
+package-lock.json
+
+# Test / cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Accuracy reports (generated)
+accuracy_report.json
+
+# Docs (kept local, not pushed to GitHub)
+docs/
+google-mcp/
