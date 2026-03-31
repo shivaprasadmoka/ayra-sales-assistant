@@ -159,6 +159,12 @@ vpn_l2tp_up() {
   done
 
   ip route add 10.0.0.0/8 dev ppp0 2>/dev/null || true
+  # Fix: prevent the broad 10.0.0.0/8 route from hijacking reply packets to
+  # Cloud Run's VPC connector range (10.8.0.0/28). Without this, TCP SYN-ACKs
+  # destined for Cloud Run get routed into the VPN tunnel instead of GCP VPC.
+  # Try host-mode gateway (ens4) first, fall back to bridge-mode (eth0).
+  ip route replace 10.8.0.0/28 via 10.128.0.1 dev ens4 2>/dev/null || \
+    ip route replace 10.8.0.0/28 via 172.17.0.1 dev eth0 2>/dev/null || true
   echo "[vpn] ppp0 UP: $(ip addr show ppp0 | grep inet)"
   return 0
 }
