@@ -33,9 +33,9 @@ MACHINE_TYPE="e2-micro"   # ~$7/month, free-tier eligible
 # ── VPN credentials (client-to-site) ──────────────────────────────────────────
 # Fill these in with what Youngsinc gave you.
 VPN_SERVER="remote.youngsinc.com"    # VPN server hostname or IP
-VPN_PSK='!RareDay33?ClearGate49%'   # Pre-Shared Key (IKEv1/IKEv2)
-VPN_USER=""                          # Username  (L2TP/IPSec client-to-site)
-VPN_PASS=""                          # Password  (L2TP/IPSec client-to-site)
+VPN_PSK='Youngs!5073'               # Pre-Shared Key
+VPN_USER="prasadm.3v@youngsinc.com"                   # Username  (L2TP/IPSec client-to-site)
+VPN_PASS="prasadm@3V!@"                 # Password  (L2TP/IPSec client-to-site)
 
 # ── SQL Server target ──────────────────────────────────────────────────────────
 TARGET_HOST="10.0.0.22"
@@ -44,7 +44,7 @@ TARGET_PORT="1433"
 # ── Detect VPN mode ───────────────────────────────────────────────────────────
 # Set to "ikev2" if Youngsinc gave you only a PSK (site-to-site / IKEv2).
 # Set to "l2tp"  if they gave you username + password (client-to-site / L2TP).
-VPN_MODE="l2tp"   # ← change to "ikev2" if using IKEv2 PSK only
+VPN_MODE="l2tp"   # L2TP/IPSec with PSK — confirmed
 
 # Repo location inside the VM (will be cloned from GitHub)
 REPO_URL="https://github.com/shivaprasadmoka/ayra-sales-assistant"
@@ -69,7 +69,7 @@ gcloud compute firewall-rules create allow-yisbeta-relay \
   --action=ALLOW \
   --rules=tcp:1433 \
   --target-tags=yisbeta-vpn-relay \
-  --source-ranges=10.8.0.0/28 \
+  --source-ranges=10.8.0.0/28,172.16.0.0/28 \
   --description="Allow Cloud Run VPC connectors to reach VPN SQL relay port" \
   2>/dev/null || echo "Firewall rule already exists, continuing."
 
@@ -85,6 +85,7 @@ echo "==> [4/6] Installing Docker + pulling repo on VM..."
 gcloud compute ssh "${VM_NAME}" \
   --project="${PROJECT}" \
   --zone="${ZONE}" \
+  --tunnel-through-iap \
   --command="
     set -e
     # Install Docker if not present
@@ -111,50 +112,86 @@ gcloud compute ssh "${VM_NAME}" \
 
 echo "==> [5/6] Starting VPN tunnel container on VM..."
 
+# Build the env-var string based on VPN mode
+if [ "${VPN_MODE}" = "l2tp" ]; then
+  ENV_VARS="-e VPN_SERVER='${VPN_SERVER}' -e VPN_PSK='${VPN_PSK}' -e VPN_USER='${VPN_USER}' -e VPN_PASS='${VPN_PASS}' -e TARGET_HOST='${TARGET_HOST}' -e TARGET_PORT='${TARGET_PORT}'"
+else
+  ENV_VARS="-e VPN_SERVER='${VPN_SERVER}' -e VPN_PSK='${VPN_PSK}' -e TARGET_HOST='${TARGET_HOST}' -e TARGET_PORT='${TARGET_PORT}'"
+fi
+
 gcloud compute ssh "${VM_NAME}" \
   --project="${PROJECT}" \
   --zone="${ZONE}" \
+  --tunnel-through-iap \
   --command="
     set -e
     # Stop existing container if running
     sudo docker rm -f youngsinc-tunnel 2>/dev/null || true
 
-    # Ensure /dev/ppp exists on the host (needed for L2TP PPP)
-    sudo modprobe ppp_generic 2>/dev/null || true
-    sudo mknod /dev/ppp c 108 0 2>/dev/null || true
-    sudo chmod 666 /dev/ppp
-
-    echo '[vm] Starting persistent VPN tunnel container...'
-    # --restart=unless-stopped: container survives VM reboots
-    # The entrypoint supervisor loop handles VPN reconnects internally
+    echo '[vm] Starting VPN tunnel container...'
     sudo docker run -d \
       --name youngsinc-tunnel \
+      --network=host \
       --restart=unless-stopped \
       --privileged \
       --cap-add NET_ADMIN \
       --cap-add SYS_MODULE \
-      --device /dev/ppp:/dev/ppp \
-      -p 1433:1433 \
-      -e VPN_SERVER='${VPN_SERVER}' \
-      -e VPN_PSK='${VPN_PSK}' \
-      -e VPN_USER='${VPN_USER}' \
-      -e VPN_PASS='${VPN_PASS}' \
-      -e TARGET_HOST='${TARGET_HOST}' \
-      -e TARGET_PORT='${TARGET_PORT}' \
-      -e RECONNECT_DELAY=90 \
+      ${ENV_VARS} \
       youngsinc-vpn-tunnel
 
-    echo '[vm] Waiting 90s for IPSec + L2TP negotiation...'
-    sleep 90
+    echo '[vm] Waiting 30s for VPN to establish...'
+    sleep 30
     echo '[vm] Container logs:'
-    sudo docker logs youngsinc-tunnel 2>&1 | grep -E '\[vpn\]|ESTABLISHED' | tail -20
+    sudo docker logs youngsinc-tunnel 2>&1 | tail -30
 
     echo '[vm] Testing port 1433...'
     if nc -z 127.0.0.1 1433 2>/dev/null; then
-      echo '[vm] PORT OPEN — SQL Server reachable through VPN!'
+      echo '[vm] ✅ Port 1433 is open — SQL Server reachable through VPN!'
     else
-      echo '[vm] Port 1433 not yet open — VPN may still be negotiating. Check: sudo docker logs youngsinc-tunnel'
+      echo '[vm] ⚠️  Port 1433 not responding — check logs: sudo docker logs youngsinc-tunnel'
     fi
+  "
+
+echo "==> [5b/6] Persisting host-level routing fix (prevents VPN route hijacking Cloud Run replies)..."
+gcloud compute ssh "${VM_NAME}" \
+  --project="${PROJECT}" \
+  --zone="${ZONE}" \
+  --tunnel-through-iap \
+  --command="
+    set -e
+    GATEWAY=\$(ip route show default | awk '/default/ {print \$3; exit}')
+    VPC_RANGE='10.8.0.0/28'
+    NIC='ens4'
+
+    # Apply immediately
+    sudo ip route replace \${VPC_RANGE} via \${GATEWAY} dev \${NIC} 2>/dev/null || true
+    echo \"[vm] Route applied: \${VPC_RANGE} via \${GATEWAY} dev \${NIC}\"
+
+    # Persist via rc.local (survives reboots)
+    if ! grep -q 'vpn-routing-fix' /etc/rc.local 2>/dev/null; then
+      sudo sed -i \"/^exit 0/i # vpn-routing-fix: prevent VPN route from hijacking Cloud Run replies\\nip route replace \${VPC_RANGE} via \${GATEWAY} dev \${NIC} 2>/dev/null || true\" /etc/rc.local
+      echo '[vm] rc.local updated.'
+    else
+      echo '[vm] rc.local already has routing fix, skipping.'
+    fi
+
+    # Persist via systemd service (runs after docker starts)
+    sudo tee /etc/systemd/system/vpn-routing-fix.service > /dev/null <<SVC
+[Unit]
+Description=Fix VPN route hijack for Cloud Run VPC connector
+After=docker.service
+Requires=docker.service
+[Service]
+Type=oneshot
+ExecStart=/sbin/ip route replace \${VPC_RANGE} via \${GATEWAY} dev \${NIC}
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
+SVC
+    sudo systemctl daemon-reload
+    sudo systemctl enable vpn-routing-fix
+    sudo systemctl start vpn-routing-fix 2>/dev/null || true
+    echo '[vm] Systemd routing fix service enabled.'
   "
 
 echo ""

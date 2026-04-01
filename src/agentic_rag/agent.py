@@ -801,7 +801,7 @@ _router_config = types.GenerateContentConfig(
 database_agent = LlmAgent(
     name="database_agent",
     model=_model,
-    planner=_light_think,
+    planner=_no_think,
     generate_content_config=_db_agent_config,
     description=(
         "Specialist for structured data questions. Handles anything about "

@@ -58,7 +58,7 @@ YISBeta SQL Server (10.0.0.22:1433)
 
 | Variable | Value |
 |---|---|
-| `AGENT_MODEL` | `gemini-2.5-flash-lite` |
+| `AGENT_MODEL` | `gemini-2.5-flash` |
 | `GOOGLE_GENAI_USE_VERTEXAI` | `true` |
 | `GOOGLE_CLOUD_PROJECT` | `ayra-sales-assistant-490010` |
 | `GOOGLE_CLOUD_LOCATION` | `us-central1` |
@@ -104,7 +104,7 @@ Cloud Run uses this connector for all egress to private IP ranges (SQL Server re
 | Item | Value |
 |---|---|
 | Name | `yisbeta-vpn-relay` |
-| Zone | `us-central1-f` |
+| Zone | `us-central1-a` |
 | Machine type | `e2-micro` |
 | Internal IP | `10.128.0.3` |
 | External IP | None (IAP tunnel only) |
@@ -115,7 +115,7 @@ Cloud Run uses this connector for all egress to private IP ranges (SQL Server re
 ```bash
 gcloud compute ssh yisbeta-vpn-relay \
   --project=ayra-sales-assistant-490010 \
-  --zone=us-central1-f \
+  --zone=us-central1-a \
   --tunnel-through-iap \
   --quiet
 ```
@@ -192,14 +192,14 @@ cd scripts/docker_vpn && sudo docker build -t youngsinc-vpn-tunnel .
 | Port | `1433` |
 | Database | `YISBeta` |
 | User | `3vAnalysts2` |
-| Reachable via | `yisbeta-vpn-relay:1433` → socat → VPN → `10.0.0.22:1433` |
+| Host (relay VM) | `10.128.0.3` |
 | Password secret | `projects/ayra-sales-assistant-490010/secrets/yisbeta-db-password/versions/latest` |
 
 ### Test DB Connectivity from Cloud Run
 
 ```bash
 curl -s "https://ayra-sales-assistant-6slvib5z6a-uc.a.run.app/healthz/db"
-# Expected: {"db_connectivity": {"yisbeta_relay_vm": "REACHABLE (10.128.0.3:1433)", ...}}
+# Expected: {"db_connectivity": {"yisbeta_relay_vm": "REACHABLE (10.128.0.2:1433)", ...}}
 ```
 
 ---
@@ -235,9 +235,10 @@ All DB connections are defined in `connections.json` at the repo root. Currently
 
 ## Known Issues & Fixes Applied
 
-### 1. VPN Route Hijacking (FIXED)
-**Problem:** Docker `--network=host` container adds `10.0.0.0/8 via ppp0`. Reply packets to Cloud Run's `10.8.0.2` were routed into the VPN tunnel instead of back to GCP VPC — causing TCP timeouts.  
-**Fix:** `ip route add 10.8.0.0/28 via 10.128.0.1 dev ens4` (persisted via rc.local + systemd).
+### 1. VPN Route Hijacking (FIXED — host + container)
+**Problem:** The `10.0.0.0/8 via ppp0` route (added by pppd after L2TP connects) hijacks reply packets destined for Cloud Run's VPC connector range `10.8.0.0/28`, sending them into the VPN tunnel instead of back to GCP VPC — causing TCP SYN-ACK to never reach Cloud Run (timeout).
+**Fix (host VM):** `ip route add 10.8.0.0/28 via 10.128.0.1 dev ens4` (persisted via rc.local + systemd).
+**Fix (container):** `ip route replace 10.8.0.0/28 via 172.17.0.1 dev eth0` added to `entrypoint.sh` after `vpn_l2tp_up` sets the ppp0 route (persisted in image at `/opt/ayra-sales-assistant/scripts/docker_vpn/entrypoint.sh`).
 
 ### 2. `SELECT DISTINCT TOP N` Syntax Error (FIXED)
 **Problem:** The `_inject_limit_if_missing` function in `agent.py` was transforming `SELECT DISTINCT col FROM tbl` into `SELECT TOP 200 DISTINCT col FROM tbl` — invalid T-SQL syntax. SQL Server requires `DISTINCT` before `TOP`.  
@@ -274,7 +275,7 @@ gcloud compute networks vpc-access connectors describe ai-factory-connector \
 
 # SSH to relay VM and check VPN in one shot
 gcloud compute ssh yisbeta-vpn-relay \
-  --project=ayra-sales-assistant-490010 --zone=us-central1-f \
+  --project=ayra-sales-assistant-490010 --zone=us-central1-a \
   --tunnel-through-iap --quiet \
   --command="sudo docker exec youngsinc-tunnel ip addr show ppp0 | grep inet"
 ```
