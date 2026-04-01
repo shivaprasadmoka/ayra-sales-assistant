@@ -29,6 +29,8 @@ REGION="us-central1"
 ZONE="us-central1-a"
 VM_NAME="yisbeta-vpn-relay"
 MACHINE_TYPE="e2-micro"   # ~$7/month, free-tier eligible
+# GCP account username (derived from your Google account, e.g. prasadforshiva@gmail.com → prasadforshiva)
+SSH_USER="prasadforshiva"
 
 # ── VPN credentials (client-to-site) ──────────────────────────────────────────
 # Fill these in with what Youngsinc gave you.
@@ -82,7 +84,7 @@ INTERNAL_IP=$(gcloud compute instances describe "${VM_NAME}" \
 echo "    Internal IP: ${INTERNAL_IP}"
 
 echo "==> [4/6] Installing Docker + pulling repo on VM..."
-gcloud compute ssh "${VM_NAME}" \
+gcloud compute ssh "${SSH_USER}@${VM_NAME}" \
   --project="${PROJECT}" \
   --zone="${ZONE}" \
   --tunnel-through-iap \
@@ -119,7 +121,7 @@ else
   ENV_VARS="-e VPN_SERVER='${VPN_SERVER}' -e VPN_PSK='${VPN_PSK}' -e TARGET_HOST='${TARGET_HOST}' -e TARGET_PORT='${TARGET_PORT}'"
 fi
 
-gcloud compute ssh "${VM_NAME}" \
+gcloud compute ssh "${SSH_USER}@${VM_NAME}" \
   --project="${PROJECT}" \
   --zone="${ZONE}" \
   --tunnel-through-iap \
@@ -153,7 +155,7 @@ gcloud compute ssh "${VM_NAME}" \
   "
 
 echo "==> [5b/6] Persisting host-level routing fix (prevents VPN route hijacking Cloud Run replies)..."
-gcloud compute ssh "${VM_NAME}" \
+gcloud compute ssh "${SSH_USER}@${VM_NAME}" \
   --project="${PROJECT}" \
   --zone="${ZONE}" \
   --tunnel-through-iap \
@@ -237,6 +239,6 @@ echo "            --vpc-egress=private-ranges-only"
 echo "  3. Test: send 'How many customers do we have?' to the agent"
 echo ""
 echo "  To check VPN status later:"
-echo "    gcloud compute ssh ${VM_NAME} --zone=${ZONE} \\"
+echo "    gcloud compute ssh ${SSH_USER}@${VM_NAME} --zone=${ZONE} --tunnel-through-iap \\"
 echo "      --command='sudo docker logs youngsinc-tunnel --tail=50'"
 echo "======================================================================"
